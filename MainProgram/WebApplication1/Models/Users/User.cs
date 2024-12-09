@@ -1,6 +1,8 @@
-﻿namespace MainProgram.Model
+﻿using MainProgram.Model;
+
+namespace MainProgram.Model
 {
-    public class User
+    public class User 
     {
         public Guid userId { get; set; }
         public string email { get; set; }

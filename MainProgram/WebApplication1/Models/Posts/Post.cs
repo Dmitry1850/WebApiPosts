@@ -1,4 +1,6 @@
-﻿namespace MainProgram.Model
+﻿using MainProgram.Model;
+
+namespace MainProgram.Model
 {
     public class Post
     {
