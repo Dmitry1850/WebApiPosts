@@ -2,21 +2,21 @@
 
 namespace WebApplication1.FakeBD
 {
-    public class BD : IFakeBD
+    public static class BD //: IFakeBD
     {
-        private List<User> users = new List<User>();
-        private List<Post> posts = new List<Post>();
+        private static List<User> users = new List<User>();
+        private static List<Post> posts = new List<Post>();
 
-        public void AddUserOnBD(User user)
+        public static void AddUserOnBD(User user)
         {
             users.Add(user);
         }
-        public void AddPostOnBD(Post post)
+        public static void AddPostOnBD(Post post)
         { 
             posts.Add(post);
         }
 
-        public User ReturnUserOnID(User user)
+        public static User ReturnUserOnID(User user)
         {
             for (int i = 0; i < users.Count; i++)
             {
@@ -28,7 +28,7 @@ namespace WebApplication1.FakeBD
 
             return null;
         }
-        public Post ReturnPostOnID(Post post)
+        public static Post ReturnPostOnID(Post post)
         {
             for (int i = 0; i < posts.Count; i++)
             {
