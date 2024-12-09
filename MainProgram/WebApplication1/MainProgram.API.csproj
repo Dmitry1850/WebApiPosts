@@ -11,7 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\EntityBase\" />
+    <Folder Include="Repositories\Interfaces\" />
+    <Folder Include="Repositories\Classes\" />
   </ItemGroup>
 
 </Project>

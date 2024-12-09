@@ -1,22 +1,22 @@
 ﻿using MainProgram.Model;
-using Microsoft.AspNetCore.Identity;
-using System.Data;
+using MainProgram.Repositories;
 
-namespace WebApplication1.Auth
+namespace WebApplication1.Services.Auth
 {
     public static class AuthUser
     {
         public static User RegisterNewUser(string Email, string Password, string Role)
         {
+
             ///<summary>
             ///Тут в общем то все проверки 
             /// </summary>
 
             if (Email == null || Password == null || Role == null) // проверка на null
-            { 
+            {
                 return null; // спросить можно ли вернуть налл
-            }    
-                
+            }
+
 
             switch (Role.ToLower())      // проверка, верна ли роль
             {
@@ -30,6 +30,7 @@ namespace WebApplication1.Auth
 
             // Пока нету проверки на правильность емаила, к сожалению
 
+            
             return new User(Email, Password, Role, string.Empty);
         }
     }

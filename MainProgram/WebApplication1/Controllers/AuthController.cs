@@ -3,8 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-using WebApplication1.Auth;
-using WebApplication1.FakeBD;
+using MainProgram.Services;
 
 namespace WebApplication1.Controllers
 {
@@ -24,7 +23,6 @@ namespace WebApplication1.Controllers
             }
             else
             {
-                BD.AddUserOnBD(newUser);
 
                 return Ok(newUser); // Возвращение нового пользователя в качестве ответа
             }
