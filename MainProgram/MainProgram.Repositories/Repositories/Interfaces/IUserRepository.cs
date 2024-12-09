@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MainProgram.Model;
 
-namespace MainProgram.Repositories.Repositories.Interfaces
+namespace MainProgram.Repositories
 {
-    internal interface IUserRepository
+    public interface IUserRepository
     {
+        Task<User> ReturnUserOnGuidAsync(Guid guid);
+        Task AddUserOnBaseAsync(User user);
     }
 }

@@ -1,7 +1,6 @@
 ﻿using MainProgram.Model;
-using MainProgram.Repositories;
 
-namespace WebApplication1.Services.Auth
+namespace MainProgram.Services
 {
     public static class AuthUser
     {

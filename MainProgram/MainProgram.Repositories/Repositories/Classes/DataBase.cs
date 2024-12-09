@@ -1,12 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MainProgram.Model;
 
-namespace MainProgram.Repositories.Repositories.Classes
+namespace MainProgram.Repositories
 {
-    internal class DataBase
+    public class DataBase
     {
+        private List<User> users = new List<User>();
+
+        public User ReturnUserOnGuid(Guid guid)
+        {
+            for (int i = 0; i < users.Count; i++)
+            { 
+                return users[i];
+            }
+            return null;
+        }
+        public void AddUserOnBase(User newUser)
+        {
+            #region Пока тест
+            //пока тест
+            users.Add(newUser);
+            #endregion
+        }
     }
 }

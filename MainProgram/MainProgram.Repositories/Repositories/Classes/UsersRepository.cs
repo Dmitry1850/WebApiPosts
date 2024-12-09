@@ -6,10 +6,13 @@ namespace MainProgram.Repositories
     {
         private DataBase dataBase = new DataBase();
 
-        public async Task AddUserAsync(User user)
+        public async Task<User> ReturnUserOnGuidAsync(Guid guid)
         {
-            await Task.Run(() => dataBase.Add(user));
+            return await Task.Run(() => dataBase.ReturnUserOnGuid(guid));
         }
-
+        public async Task AddUserOnBaseAsync(User user)
+        {
+            await Task.Run(() => dataBase.AddUserOnBase(user));
+        }
     }
 }

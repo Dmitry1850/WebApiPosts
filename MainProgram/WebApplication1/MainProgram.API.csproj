@@ -15,4 +15,11 @@
     <Folder Include="Repositories\Classes\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MainProgram.Application\MainProgram.Application.csproj" />
+    <ProjectReference Include="..\MainProgram.Infrastructure\MainProgram.Infrastructure.csproj" />
+    <ProjectReference Include="..\MainProgram.Logic\MainProgram.Logic.csproj" />
+    <ProjectReference Include="..\MainProgram.Repositories\MainProgram.Repositories.csproj" />
+  </ItemGroup>
+
 </Project>
