@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using MainProgram.Services;
 
-namespace WebApplication1.Controllers
+namespace MainProgram.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
