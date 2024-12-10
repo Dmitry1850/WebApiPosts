@@ -4,15 +4,21 @@ namespace MainProgram.Repositories
 {
     public class UsersRepository : IUserRepository
     {
-        private DataBase dataBase = new DataBase();
+        private List<User> usersBase = new List<User>();
 
-        public async Task<User> ReturnUserOnGuidAsync(Guid guid)
+        public async Task<User> ReturnUser(string Email)
         {
-            return await Task.Run(() => dataBase.ReturnUserOnGuid(guid));
+            for (int i = 0; i < usersBase.Count; i++)
+            {
+                if (usersBase[i].email == Email)
+                    return await Task.Run(() => (usersBase[i]));
+            }
+
+            return null;
         }
-        public async Task AddUserOnBaseAsync(User user)
+        public async Task AddUser(User user)
         {
-            await Task.Run(() => dataBase.AddUserOnBase(user));
+            await Task.Run(() => usersBase.Add(user));
         }
     }
 }

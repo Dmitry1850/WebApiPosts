@@ -4,7 +4,7 @@ namespace MainProgram.Repositories
 {
     public interface IUserRepository
     {
-        Task<User> ReturnUserOnGuidAsync(Guid guid);
-        Task AddUserOnBaseAsync(User user);
+        Task<User> ReturnUser(string Email);
+        Task AddUser(User user);
     }
 }
