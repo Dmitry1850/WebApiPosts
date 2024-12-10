@@ -12,21 +12,21 @@ namespace MainProgram.Controllers
     public class UserController : Controller
     {
         [HttpPost]
-        public IActionResult CreateUser(string email, string password, string role)
-        {
-            User newUser = AuthUser.RegisterNewUser(email, password, role);
+        //public IActionResult CreateUser(string email, string password, string role)
+        //{
+        //    User newUser = AuthService.RegisterNewUser(email, password, role);
 
-            if (newUser == null)
-            {
-                // нужно вернуть что то  
-                return NotFound(); // тут спросить что вернуть ибо ошибка выдается
-            }
-            else
-            {
+        //    if (newUser == null)
+        //    {
+        //        // нужно вернуть что то  
+        //        return NotFound(); // тут спросить что вернуть ибо ошибка выдается
+        //    }
+        //    else
+        //    {
 
-                return Ok(newUser); // Возвращение нового пользователя в качестве ответа
-            }
+        //        return Ok(newUser); // Возвращение нового пользователя в качестве ответа
+        //    }
            
-        }
+        //}
     }
 }

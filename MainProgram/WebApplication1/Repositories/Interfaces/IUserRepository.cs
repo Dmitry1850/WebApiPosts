@@ -6,5 +6,7 @@ namespace MainProgram.Repositories
     {
         Task<User> ReturnUser(string Email);
         Task AddUser(User user);
+        bool UserExists(string email);
+        List<User> ReturnAll();
     }
 }

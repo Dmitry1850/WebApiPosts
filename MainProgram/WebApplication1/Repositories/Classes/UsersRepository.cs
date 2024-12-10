@@ -1,4 +1,5 @@
 ﻿using MainProgram.Model;
+using System.Collections.Generic;
 
 namespace MainProgram.Repositories
 {
@@ -19,6 +20,15 @@ namespace MainProgram.Repositories
         public async Task AddUser(User user)
         {
             await Task.Run(() => usersBase.Add(user));
+        }
+        public bool UserExists(string email)
+        {
+            return usersBase.Any(u => u.email == email);
+        }
+
+        public List<User> ReturnAll()
+        {
+            return usersBase;
         }
     }
 }
