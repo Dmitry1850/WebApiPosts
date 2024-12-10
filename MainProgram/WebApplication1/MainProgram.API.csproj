@@ -10,16 +10,4 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Repositories\Interfaces\" />
-    <Folder Include="Repositories\Classes\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\MainProgram.Application\MainProgram.Application.csproj" />
-    <ProjectReference Include="..\MainProgram.Infrastructure\MainProgram.Infrastructure.csproj" />
-    <ProjectReference Include="..\MainProgram.Logic\MainProgram.Logic.csproj" />
-    <ProjectReference Include="..\MainProgram.Repositories\MainProgram.Repositories.csproj" />
-  </ItemGroup>
-
 </Project>
