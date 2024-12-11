@@ -4,31 +4,45 @@ namespace MainProgram.Repositories
 {
     public class PostsRepository : IPostRepository
     {
-        private List<Post> posts = new List<Post>();
+        private static readonly List<Post> _posts = new();
+
+        public async Task<Post?> GetPostById(Guid postId)
+        {
+            return _posts.FirstOrDefault(p => p.postId == postId);
+        }
+
+        public async Task<List<Post>> GetPostsByAuthorId(Guid authorId)
+        {
+            return _posts.Where(p => p.authorId == authorId).ToList();
+        }
+
+        public async Task<List<Post>> GetPublishedPosts()
+        {
+            return _posts.Where(p => p.status == "Published").ToList();
+        }
 
         public async Task AddPost(Post post)
         {
-            posts.Add(post);
+            _posts.Add(post);
         }
 
-        public async Task DeletePost(Guid PostID)
+        public async Task UpdatePost(Post post)
         {
-            for (int i = 0; i < posts.Count; i++)
+            var existingPost = _posts.FirstOrDefault(p => p.postId == post.postId);
+            if (existingPost != null)
             {
-                if (PostID == posts[i].postId)
-                    await Task.Run(() => (posts.Remove(posts[i])));
+                _posts.Remove(existingPost);
+                _posts.Add(post);
             }
         }
 
-        public async Task<Post> ReturnPost(Guid PostID)
+        public async Task DeletePost(Guid postId)
         {
-            for (int i = 0; i < posts.Count; i++)
+            var post = _posts.FirstOrDefault(p => p.postId == postId);
+            if (post != null)
             {
-                if (PostID == posts[i].postId)
-                    return await Task.Run(() => (posts[i]));
+                _posts.Remove(post);
             }
-
-            return null;
         }
     }
 }

@@ -2,6 +2,18 @@
 {
     public class Post
     {
+        public Post(Guid PostID, Guid AuthorID, string IdempotencyKey, string Title, string Content, DateTime CreatedAt, DateTime UpdatedAt, string Status) 
+        { 
+            postId = Guid.NewGuid();
+            authorId = AuthorID;
+            idempotencyKey = IdempotencyKey;
+            title = Title;
+            content = Content;
+            createdAt = CreatedAt;
+            updatedAt = UpdatedAt;
+            status = Status;
+        }
+
         public Guid postId { get; set; }
         public Guid authorId { get; set; }
         public string idempotencyKey { get; set; }

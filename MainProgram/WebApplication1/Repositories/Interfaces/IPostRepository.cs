@@ -4,8 +4,11 @@ namespace MainProgram.Repositories
 {
     public interface IPostRepository
     {
-        Task<Post> ReturnPost(Guid PostID);
+        Task<Post?> GetPostById(Guid postId);
+        Task<List<Post>> GetPostsByAuthorId(Guid authorId);
+        Task<List<Post>> GetPublishedPosts();
         Task AddPost(Post post);
-        Task DeletePost(Guid PostID);
+        Task UpdatePost(Post post);
+        Task DeletePost(Guid postId);
     }
 }
