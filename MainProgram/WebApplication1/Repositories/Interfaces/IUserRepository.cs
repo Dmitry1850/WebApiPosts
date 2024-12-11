@@ -4,7 +4,7 @@ namespace MainProgram.Repositories
 {
     public interface IUserRepository
     {
-        Task<User> ReturnUser(string Email);
+        Task<User> GetUser(string Email);
         Task AddUser(User user);
         bool UserExists(string email);
         List<User> ReturnAll();

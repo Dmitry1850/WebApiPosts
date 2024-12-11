@@ -4,29 +4,37 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using MainProgram.Services;
+using MainProgram.Auth;
+using MainProgram.Interfaces;
 
 namespace MainProgram.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
-    public class UserController : Controller
+    [ApiController]
+    public class AuthController(IAuthService authService) : ControllerBase
     {
-        [HttpPost]
-        //public IActionResult CreateUser(string email, string password, string role)
-        //{
-        //    User newUser = AuthService.RegisterNewUser(email, password, role);
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginModel loginModel)
+        {
+            var response = await authService.Login(loginModel);
+            if (response == null)
+            {
+                return BadRequest();
+            }
 
-        //    if (newUser == null)
-        //    {
-        //        // нужно вернуть что то  
-        //        return NotFound(); // тут спросить что вернуть ибо ошибка выдается
-        //    }
-        //    else
-        //    {
+            return Ok(response);
+        }
 
-        //        return Ok(newUser); // Возвращение нового пользователя в качестве ответа
-        //    }
-           
-        //}
+        [HttpPost("Registration")]
+        public async Task<IActionResult> Register(RegisterModel registerModel)
+        {
+            var response = await authService.Register(registerModel);
+            if (response == null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(response);
+        }
     }
 }

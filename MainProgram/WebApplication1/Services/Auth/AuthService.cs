@@ -1,4 +1,4 @@
-﻿using MainProgram.API.Services.Interfaces;
+﻿using MainProgram.Interfaces;
 using MainProgram.Common;
 using MainProgram.Exceptions;
 using MainProgram.Model;
@@ -11,144 +11,52 @@ using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Text;
 using MainProgram.AllRequests;
+using MainProgram.Auth;
+using MainProgram.Interfeices;
+using MainProgram.Users;
 
 namespace MainProgram.Services
 {
-    public class AuthService : IAuthService
+    public class AuthService(IUserRepository userRepository, ITokenService tokenService, IAuthSettings authSettings) : IAuthService
     {
-        private readonly IConfiguration _config;
-        private readonly IUserRepository _userRepository;
-
-        public AuthService(IUserRepository userRepository, IConfiguration config)
+        public async Task<AuthResponse?> Register(RegisterModel registerModel)
         {
-            _userRepository = userRepository;
-            _config = config;
-        }
-
-        /// <summary>
-        /// Регистрация нового пользователя.
-        /// </summary>
-        public (string AccessToken, string RefreshToken) Register(RegisterRequest request)
-        {
-            ValidateRegisterRequest(request);
-
-            if (_userRepository.UserExists(request.Email))
+            var user = await userRepository.GetUser(registerModel.Username) ?? await userRepository.GetUser(registerModel.Email);
+            if (user != null)
             {
-                throw new BadRequestException("Email already registered.");
+                return null;
             }
 
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            var refreshToken = tokenService.CreateToken(new List<Claim>());
+            User newUser = new User(Guid.NewGuid(), registerModel.Email, Hash.GetHash(registerModel.Password), (int)Role.User, refreshToken, DateTime.UtcNow.AddHours(authSettings.TokenExpiresAfterHours));
+            var id = userRepository.AddUser(newUser);
 
-            var newUser = new User
+            var claims = Jwt.GetClaims(newUser.UserId, (int)Role.User, registerModel.Email);
+            var accessToken = tokenService.CreateToken(claims, 24);
+
+            return new AuthResponse
             {
-                userId = Guid.NewGuid(),
-                email = request.Email,
-                passwordHash = hashedPassword,
-                role = request.Role,
-                refreshToken = string.Empty,
-                refreshTokenExpiryTime = DateTime.MinValue
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
             };
-
-            var accessToken = GenerateJsonWebToken(newUser, TimeSpan.FromHours(2));
-            var refreshToken = GenerateRefreshToken();
-
-            newUser.RefreshToken = refreshToken.Token;
-            newUser.RefreshTokenExpiryTime = refreshToken.Expiry;
-
-            _userRepository.AddUser(newUser);
-
-            return (accessToken, refreshToken.Token);
         }
 
-        /// <summary>
-        /// Аутентификация пользователя.
-        /// </summary>
-        public (string AccessToken, string RefreshToken) Login(LoginRequest request)
+        public async Task<AuthResponse?> Login(LoginModel loginModel)
         {
-            var user = _userRepository.GetUserByEmail(request.Email);
-
-            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            var user = await userRepository.GetUser(loginModel.Login);
+            if (user == null || user.PasswordHash != Hash.GetHash(loginModel.Password))
             {
-                throw new NotFoundException("Invalid email or password.");
+                return null;
             }
 
-            var accessToken = GenerateJsonWebToken(user, TimeSpan.FromHours(2));
-            var refreshToken = GenerateRefreshToken();
+            var claims = Jwt.GetClaims(user.UserId, user.Role, user.Email);
+            var accessToken = tokenService.CreateToken(claims, 24);
 
-            user.RefreshToken = refreshToken.Token;
-            user.RefreshTokenExpiryTime = refreshToken.Expiry;
-
-            return (accessToken, refreshToken.Token);
-        }
-
-        /// <summary>
-        /// Обновление токена.
-        /// </summary>
-        public (string AccessToken, string RefreshToken) RefreshToken(RefreshTokenRequest request)
-        {
-            var user = _userRepository.ReturnAll().FirstOrDefault(u => u.RefreshToken == request.RefreshToken);
-
-            if (user == null || user.RefreshTokenExpiryTime < DateTime.UtcNow)
+            return new AuthResponse
             {
-                throw new BadRequestException("Refresh Token is invalid.");
-            }
-
-            var newAccessToken = GenerateJsonWebToken(user, TimeSpan.FromHours(2));
-            var newRefreshToken = GenerateRefreshToken();
-
-            user.RefreshToken = newRefreshToken.Token;
-            user.RefreshTokenExpiryTime = newRefreshToken.Expiry;
-
-            return (newAccessToken, newRefreshToken.Token);
-        }
-
-        private void ValidateRegisterRequest(RegisterRequest request)
-        {
-            if (string.IsNullOrWhiteSpace(request.Email) ||
-                string.IsNullOrWhiteSpace(request.Password) ||
-                string.IsNullOrWhiteSpace(request.Role))
-            {
-                throw new BadRequestException("All fields are required.");
-            }
-
-            if (!Regex.IsMatch(request.Email, @"^[^\s@]+@[^\s@]+\.[^\s@]+$"))
-            {
-                throw new BadRequestException("Invalid email format.");
-            }
-
-            if (request.Role != "Author" && request.Role != "Reader")
-            {
-                throw new BadRequestException("Invalid role.");
-            }
-        }
-
-        private string GenerateJsonWebToken(User user, TimeSpan expiryDuration)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtOptions:SigningKey"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
-
-            var token = new JwtSecurityToken(
-                _config["JwtOptions:Issuer"],
-                _config["JwtOptions:Audience"],
-                claims,
-                expires: DateTime.UtcNow.Add(expiryDuration),
-                signingCredentials: credentials);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        private (string Token, DateTime Expiry) GenerateRefreshToken()
-        {
-            var refreshToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-            return (refreshToken, DateTime.UtcNow.AddDays(7));
+                AccessToken = accessToken,
+                RefreshToken = user.RefreshToken,
+            };
         }
     }
 }

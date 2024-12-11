@@ -7,11 +7,11 @@ namespace MainProgram.Repositories
     {
         private List<User> usersBase = new List<User>();
 
-        public async Task<User> ReturnUser(string Email)
+        public async Task<User> GetUser(string Email)
         {
             for (int i = 0; i < usersBase.Count; i++)
             {
-                if (usersBase[i].email == Email)
+                if (usersBase[i].Email == Email)
                     return await Task.Run(() => (usersBase[i]));
             }
 
@@ -23,7 +23,7 @@ namespace MainProgram.Repositories
         }
         public bool UserExists(string email)
         {
-            return usersBase.Any(u => u.email == email);
+            return usersBase.Any(u => u.Email == email);
         }
 
         public List<User> ReturnAll()
