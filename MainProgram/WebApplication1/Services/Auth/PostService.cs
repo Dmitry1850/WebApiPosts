@@ -7,17 +7,13 @@ using MainProgram.Model;
 
 namespace MainProgram.Auth
 {
-    public class PostService : IPostService
+    public class PostService : IPostCervice
     {
-        //private readonly IMinioRepository _minioRepository;
-        private readonly IPostRepository _postRepository;
-        //private readonly IIdempotencyKeysRepository _usedIdempotencyKeys;
+        private IPostRepository _postRepository;
 
         public PostService(IPostRepository postRepository)
         {
-            //_minioRepository = minioRepository;
             _postRepository = postRepository;
-            //_usedIdempotencyKeys = idempotencyKeysRepository;
         }
 
         public async Task<Post?> GetPostById(Guid id)
@@ -37,13 +33,9 @@ namespace MainProgram.Auth
 
         public async Task<Post> CreatePost(string authorId, CreatePostRequest postRequest)
         {
-            //if (_usedIdempotencyKeys.Contains(postRequest.IdempotencyKey))
-            //    throw new ConflictException("IdempotencyKey has already been used.");
-
             Post newPost = new Post(Guid.NewGuid(), Guid.Parse(authorId), postRequest.IdempotencyKey, postRequest.Title, postRequest.Content, DateTime.UtcNow, DateTime.UtcNow, "Draft");
             
             await _postRepository.AddPost(newPost);
-            //_usedIdempotencyKeys.Add(postRequest.IdempotencyKey);
 
             return newPost;
         }
@@ -79,25 +71,20 @@ namespace MainProgram.Auth
             if (image == null)
                 throw new NotFoundException("Image not found.");
 
-            var bucketName = "post-images";
             var objectName = $"{postId}/{imageId}";
-            //await _minioRepository.DeleteObjectAsync(bucketName, objectName);
 
             post.images.Remove(image);
 
             return true;
         }
 
-        public async Task<List<Post>> AddImage(Guid postId, string authorId, List<IFormFile> images)
+        public async Task<List<Image>> AddImage(Guid postId, string authorId, List<IFormFile> images)
         {
             var post = await _postRepository.GetPostById(postId);
             if (post == null)
                 throw new NotFoundException("Post not found.");
             if (post.authorId.ToString() != authorId)
                 throw new Exception("Access denied.");
-
-            var bucketName = "post-images";
-            //await _minioRepository.CreateBucketAsync(bucketName);
 
             var uploadedImages = new List<Image>();
 
@@ -109,9 +96,8 @@ namespace MainProgram.Auth
                 var objectName = $"{postId}/{id}";
 
                 await using var stream = image.OpenReadStream();
-                //await _minioRepository.UploadObjectAsync(bucketName, objectName, stream, image.Length, image.ContentType);
 
-                //var imageUrl = await _minioRepository.GetPresignedUrlAsync(bucketName, objectName, 3600);
+                string imageUrl = "https://example.com/image.jpg";
 
                 var newImage = new Image(id, postId, imageUrl, DateTime.UtcNow);
 
