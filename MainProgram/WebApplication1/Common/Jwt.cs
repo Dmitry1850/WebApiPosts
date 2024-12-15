@@ -25,7 +25,7 @@ namespace MainProgram.Common
             return ParseToken(token, "username");
         }
 
-        public static List<Claim> GetClaims(Guid id, int role, string email)
+        public static async Task<IEnumerable<Claim>> GetClaims(Guid id, int role, string email)
         {
             return
             [

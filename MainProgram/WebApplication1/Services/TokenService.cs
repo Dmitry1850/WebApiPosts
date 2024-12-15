@@ -11,7 +11,7 @@ namespace MainProgram.Services;
 
 public class TokenService(IAuthSettings authSettings, IUserRepository userRepository) : ITokenService
 {
-    public string CreateToken(IEnumerable<Claim> claims, int tokenExpiresAfterHours = 0)
+    public Task<string> CreateToken(IEnumerable<Claim> claims, int tokenExpiresAfterHours = 0)
     {
         var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authSettings.Key));
 
@@ -23,7 +23,7 @@ public class TokenService(IAuthSettings authSettings, IUserRepository userReposi
         var token = new JwtSecurityToken(authSettings.Issuer, authSettings.Audience, claims, null, DateTime.UtcNow.AddHours(tokenExpiresAfterHours),
             new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
     }
 
     public async Task<AuthResponse?> RefreshToken(string refreshToken)
@@ -36,12 +36,12 @@ public class TokenService(IAuthSettings authSettings, IUserRepository userReposi
 
         var claims = Jwt.GetClaims(user.UserId, user.Role, user.Email);
         var newRefreshToken = CreateToken(new List<Claim>());
-        var newAccessToken = CreateToken(claims, 24);
+        var newAccessToken = CreateToken(await claims, 24);
 
         return new AuthResponse
         {
-            AccessToken = newAccessToken,
-            RefreshToken = newRefreshToken
+            AccessToken = await newAccessToken,
+            RefreshToken = await newRefreshToken
         };
     }
 }
