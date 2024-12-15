@@ -29,19 +29,19 @@ namespace MainProgram.Controllers
         [Authorize(Roles = "Author")]
         [HttpPost("{postId}/images")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> AddImagesToPost([FromRoute] Guid postId, [FromForm] List<IFormFile> images)
+        public async Task<IActionResult> AddImagesToPost([FromRoute] string postId, [FromForm] List<IFormFile> images)
         {
             var authorId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
-            var uploadedImages = await _postService.AddImage(postId, authorId, images);
+            var uploadedImages = await _postService.AddImage(Guid.Parse(postId), authorId, images);
             return Created("", new { UploadedImages = uploadedImages });
         }
 
         [Authorize(Roles = "Author")]
         [HttpPost("{postId}")]
-        public async Task<IActionResult> EditPost([FromRoute] Guid postId, [FromBody] UpdatePost updatePost)
+        public async Task<IActionResult> EditPost([FromRoute] string postId, [FromBody] UpdatePost updatePost)
         {
             var authorId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
-            var updatedPost = await _postService.UpdatePost(postId, authorId, updatePost);
+            var updatedPost = await _postService.UpdatePost(Guid.Parse(postId), authorId, updatePost);
             return Ok(new { Message = "Post successfully updated.", UpdatedPost = updatedPost });
         }
 
@@ -69,9 +69,9 @@ namespace MainProgram.Controllers
 
         [Authorize(Roles = "Author")]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetPostById([FromRoute] Guid id)
+        public async Task<IActionResult> GetPostById([FromRoute] string id)
         {
-            var post = await _postService.GetPostById(id);
+            var post = await _postService.GetPostById(Guid.Parse(id));
 
             if (post == null)
                 return NotFound("Post not found.");
@@ -81,19 +81,19 @@ namespace MainProgram.Controllers
 
         [Authorize(Roles = "Author")]
         [HttpPatch("{postId}/status")]
-        public async Task<IActionResult> PublishPost([FromRoute] Guid postId, [FromBody] PublishPostRequest request)
+        public async Task<IActionResult> PublishPost([FromRoute] string postId, [FromBody] PublishPostRequest request)
         {
             var authorId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
-            var updatedPost = await _postService.PublishPost(postId, authorId, request);
+            var updatedPost = await _postService.PublishPost(Guid.Parse(postId), authorId, request);
             return Ok(new { Message = "Post successfully published.", UpdatedPost = updatedPost });
         }
 
         [Authorize(Roles = "Author")]
         [HttpDelete("{postId}/images/{imageId}")]
-        public async Task<IActionResult> DeleteImages([FromRoute] Guid postId, [FromRoute] Guid imageId)
+        public async Task<IActionResult> DeleteImages([FromRoute] string postId, [FromRoute] string imageId)
         {
             var authorId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
-            var success = await _postService.DeleteImage(postId, imageId, authorId);
+            var success = await _postService.DeleteImage(Guid.Parse(postId), Guid.Parse(imageId), authorId);
 
             if (!success)
                 return NotFound("Image or post not found, or access denied.");
