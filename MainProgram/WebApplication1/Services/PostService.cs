@@ -2,7 +2,6 @@
 using MainProgram.Exceptions;
 using MainProgram.Interfaces;
 using MainProgram.Repositories;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using MainProgram.Model;
 
 namespace MainProgram.Auth
@@ -45,12 +44,12 @@ namespace MainProgram.Auth
             var post = await _postRepository.GetPostById(postId);
             if (post == null)
                 throw new NotFoundException("Post not found.");
-            if (post.authorId.ToString() != authorId)
+            if (post.AuthorId.ToString() != authorId)
                 throw new Exception("Access denied.");
 
-            post.title = updatePost.Title;
-            post.content = updatePost.Content;
-            post.updatedAt = DateTime.UtcNow;
+            post.Title = updatePost.Title;
+            post.Content = updatePost.Content;
+            post.UpdatedAt = DateTime.UtcNow;
 
             await _postRepository.UpdatePost(post);
 
@@ -64,16 +63,16 @@ namespace MainProgram.Auth
 
             if (post == null)
                 throw new NotFoundException("Post not found.");
-            if (post.authorId.ToString() != authorId)
+            if (post.AuthorId.ToString() != authorId)
                 throw new Exception("Access denied.");
 
-            var image = post.images.FirstOrDefault(img => img.imageId == imageId);
+            var image = post.Images.FirstOrDefault(img => img.ImageId == imageId);
             if (image == null)
                 throw new NotFoundException("Image not found.");
 
             var objectName = $"{postId}/{imageId}";
 
-            post.images.Remove(image);
+            post.Images.Remove(image);
 
             return true;
         }
@@ -83,7 +82,7 @@ namespace MainProgram.Auth
             var post = await _postRepository.GetPostById(postId);
             if (post == null)
                 throw new NotFoundException("Post not found.");
-            if (post.authorId.ToString() != authorId)
+            if (post.AuthorId.ToString() != authorId)
                 throw new Exception("Access denied.");
 
             var uploadedImages = new List<Image>();
@@ -101,7 +100,7 @@ namespace MainProgram.Auth
 
                 var newImage = new Image(id, postId, imageUrl, DateTime.UtcNow);
 
-                post.images.Add(newImage);
+                post.Images.Add(newImage);
                 uploadedImages.Add(newImage);
             }
 
@@ -113,11 +112,11 @@ namespace MainProgram.Auth
             var post = await _postRepository.GetPostById(postId);
             if (post == null)
                 throw new NotFoundException("Post not found.");
-            if (post.authorId.ToString() != authorId)
+            if (post.AuthorId.ToString() != authorId)
                 throw new Exception("Access denied.");
 
-            post.status = request.Status;
-            post.updatedAt = DateTime.UtcNow;
+            post.Status = request.Status;
+            post.UpdatedAt = DateTime.UtcNow;
 
             await _postRepository.UpdatePost(post);
 

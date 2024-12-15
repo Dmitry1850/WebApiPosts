@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity.Data;
-using MainProgram.AllRequests;
-using MainProgram.Auth;
+﻿using MainProgram.Auth;
 
 namespace MainProgram.Interfaces;
 

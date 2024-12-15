@@ -5,7 +5,7 @@ namespace MainProgram.Common
 {
     public static class Hash
     {
-        public static string GetHash(string str)
+        public static async Task<string> GetHash(string str)
         {
             var hash = MD5.HashData(Encoding.ASCII.GetBytes(str));
             var output = new StringBuilder(hash.Length);
@@ -14,7 +14,7 @@ namespace MainProgram.Common
                 output.Append(b.ToString("X2"));
             }
 
-            return output.ToString();
+            return await Task.Run(() => (output.ToString()));
         }
     }
 }

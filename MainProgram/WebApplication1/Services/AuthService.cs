@@ -1,18 +1,9 @@
 ﻿using MainProgram.Interfaces;
 using MainProgram.Common;
-using MainProgram.Exceptions;
 using MainProgram.Model;
 using MainProgram.Repositories;
-using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.IdentityModel.Tokens;
-using System.Data;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text.RegularExpressions;
-using System.Text;
-using MainProgram.AllRequests;
 using MainProgram.Auth;
-using MainProgram.Interfeices;
 using MainProgram.Users;
 
 namespace MainProgram.Services
@@ -23,16 +14,14 @@ namespace MainProgram.Services
         {
             var user = await userRepository.GetUser(registerModel.Username) ?? await userRepository.GetUser(registerModel.Email);
             if (user != null)
-            {
                 return null;
-            }
 
-            var refreshToken = tokenService.CreateToken(new List<Claim>());
-            User newUser = new User(Guid.NewGuid(), registerModel.Email, Hash.GetHash(registerModel.Password), (int)Role.User, refreshToken, DateTime.UtcNow.AddHours(authSettings.TokenExpiresAfterHours));
-            var id = userRepository.AddUser(newUser);
+            var refreshToken = await tokenService.CreateToken(new List<Claim>());
+            User newUser = new User(Guid.NewGuid(), registerModel.Email, await Hash.GetHash(registerModel.Password), (int)Role.User, refreshToken, DateTime.UtcNow.AddHours(authSettings.TokenExpiresAfterHours));
+            var id = await userRepository.AddUser(newUser);
 
-            var claims = Jwt.GetClaims(newUser.UserId, (int)Role.User, registerModel.Email);
-            var accessToken = tokenService.CreateToken(claims, 24);
+            var claims = await Jwt.GetClaims(newUser.UserId, (int)Role.User, registerModel.Email);
+            var accessToken = await tokenService.CreateToken(claims, 24);
 
             return new AuthResponse
             {
@@ -44,17 +33,16 @@ namespace MainProgram.Services
         public async Task<AuthResponse?> Login(LoginModel loginModel)
         {
             var user = await userRepository.GetUser(loginModel.Login);
-            if (user == null || user.PasswordHash != Hash.GetHash(loginModel.Password))
-            {
+
+            if (user == null || user.PasswordHash != Hash.GetHash(loginModel.Password).ToString())
                 return null;
-            }
 
             var claims = Jwt.GetClaims(user.UserId, user.Role, user.Email);
-            var accessToken = tokenService.CreateToken(claims, 24);
+            var accessToken = tokenService.CreateToken(await claims, 24);
 
             return new AuthResponse
             {
-                AccessToken = accessToken,
+                AccessToken = accessToken.ToString(),
                 RefreshToken = user.RefreshToken,
             };
         }

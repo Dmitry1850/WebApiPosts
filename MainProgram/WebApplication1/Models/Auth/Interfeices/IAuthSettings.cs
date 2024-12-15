@@ -1,4 +1,4 @@
-﻿namespace MainProgram.Interfeices
+﻿namespace MainProgram.Interfaces
 {
     public interface IAuthSettings
     {
