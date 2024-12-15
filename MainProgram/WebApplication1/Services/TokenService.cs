@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using MainProgram.Auth;
 using MainProgram.Common;
 
-namespace EmployeeService.Services;
+namespace MainProgram.Services;
 
 public class TokenService(IAuthSettings authSettings, IUserRepository userRepository) : ITokenService
 {
