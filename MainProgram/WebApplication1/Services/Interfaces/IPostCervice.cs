@@ -1,6 +1,5 @@
 ﻿using MainProgram.AllRequests;
 using MainProgram.Model;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace MainProgram.Interfaces
 {

@@ -1,9 +1,4 @@
-﻿using MainProgram.Model;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.AspNetCore.Mvc;
-using MainProgram.Services;
+﻿using Microsoft.AspNetCore.Mvc;
 using MainProgram.Auth;
 using MainProgram.Interfaces;
 

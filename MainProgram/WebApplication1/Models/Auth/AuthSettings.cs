@@ -1,4 +1,4 @@
-﻿using MainProgram.Interfeices;
+﻿using MainProgram.Interfaces;
 
 namespace MainProgram.Auth
 {

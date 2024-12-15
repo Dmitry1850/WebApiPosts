@@ -1,18 +1,9 @@
 ﻿using MainProgram.Interfaces;
 using MainProgram.Common;
-using MainProgram.Exceptions;
 using MainProgram.Model;
 using MainProgram.Repositories;
-using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.IdentityModel.Tokens;
-using System.Data;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text.RegularExpressions;
-using System.Text;
-using MainProgram.AllRequests;
 using MainProgram.Auth;
-using MainProgram.Interfeices;
 using MainProgram.Users;
 
 namespace MainProgram.Services

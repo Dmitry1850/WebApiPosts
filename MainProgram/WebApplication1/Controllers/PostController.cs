@@ -1,5 +1,4 @@
 ﻿using MainProgram.AllRequests;
-using MainProgram.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
