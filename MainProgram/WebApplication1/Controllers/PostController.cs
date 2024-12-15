@@ -23,7 +23,7 @@ namespace MainProgram.Controllers
         {
             var authorId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
             var newPost = await _postService.CreatePost(authorId, postRequest);
-            return CreatedAtAction(nameof(GetPostById), new { id = newPost.postId }, newPost);
+            return CreatedAtAction(nameof(GetPostById), new { id = newPost.PostId }, newPost);
         }
 
         [Authorize(Roles = "Author")]

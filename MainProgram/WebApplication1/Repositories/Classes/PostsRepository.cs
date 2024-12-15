@@ -8,17 +8,17 @@ namespace MainProgram.Repositories
 
         public async Task<Post?> GetPostById(Guid postId)
         {
-            return _posts.FirstOrDefault(p => p.postId == postId);
+            return _posts.FirstOrDefault(p => p.PostId == postId);
         }
 
         public async Task<List<Post>> GetPostsByAuthorId(Guid authorId)
         {
-            return _posts.Where(p => p.authorId == authorId).ToList();
+            return _posts.Where(p => p.AuthorId == authorId).ToList();
         }
 
         public async Task<List<Post>> GetPublishedPosts()
         {
-            return _posts.Where(p => p.status == "Published").ToList();
+            return _posts.Where(p => p.Status == "Published").ToList();
         }
 
         public async Task AddPost(Post post)
@@ -28,7 +28,7 @@ namespace MainProgram.Repositories
 
         public async Task UpdatePost(Post post)
         {
-            var existingPost = _posts.FirstOrDefault(p => p.postId == post.postId);
+            var existingPost = _posts.FirstOrDefault(p => p.PostId == post.PostId);
             if (existingPost != null)
             {
                 _posts.Remove(existingPost);
@@ -38,7 +38,7 @@ namespace MainProgram.Repositories
 
         public async Task DeletePost(Guid postId)
         {
-            var post = _posts.FirstOrDefault(p => p.postId == postId);
+            var post = _posts.FirstOrDefault(p => p.PostId == postId);
             if (post != null)
             {
                 _posts.Remove(post);

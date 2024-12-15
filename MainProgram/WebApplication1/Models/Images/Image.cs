@@ -2,17 +2,17 @@
 {
     public class Image
     {
-        public Image(Guid ImageID, Guid PostID, string ImageURL, DateTime CreatedAt)
+        public Image(Guid imageID, Guid postID, string imageURL, DateTime createdAt)
         { 
-            imageId = ImageID;
-            postId = PostID;
-            imageUrl = ImageURL;
-            createdAt = CreatedAt;
+            ImageId = imageID;
+            PostId = postID;
+            ImageUrl = imageURL;
+            CreatedAt = createdAt;
         }
 
-        public Guid imageId { get; set; }
-        public Guid postId { get; set; }
-        public string imageUrl { get; set; }
-        public DateTime createdAt { get; set; }
+        public Guid ImageId { get; set; }
+        public Guid PostId { get; set; }
+        public string ImageUrl { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }
