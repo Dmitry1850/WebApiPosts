@@ -34,7 +34,7 @@ namespace MainProgram.Services
         {
             var user = await userRepository.GetUser(loginModel.Login);
 
-            if (user == null || user.PasswordHash != Hash.GetHash(loginModel.Password).ToString())
+            if (user == null || user.PasswordHash != await Hash.GetHash(loginModel.Password))
                 return null;
 
             var claims = Jwt.GetClaims(user.UserId, user.Role, user.Email);
@@ -42,7 +42,7 @@ namespace MainProgram.Services
 
             return new AuthResponse
             {
-                AccessToken = accessToken.ToString(),
+                AccessToken = await accessToken,
                 RefreshToken = user.RefreshToken,
             };
         }
