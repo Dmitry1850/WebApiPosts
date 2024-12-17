@@ -24,28 +24,30 @@ namespace MainProgram.Common
         {
             return ParseToken(token, "username");
         }
-
-        public static async Task<IEnumerable<Claim>> GetClaims(Guid id, int role, string email)
+        private static string? ParseToken(string token, string key)
         {
-            return
-            [
-                new Claim("userId", id.ToString()),
-                new Claim("role", role.ToString()),
-                new Claim("email", email),
-            ];
-        }
-
-        private static string? ParseToken(string token, string role)
-        {
-            if (token.Contains("Bearer "))
+            try
             {
-                token = token.Split(' ')[1]; // убираем Bearer из токена
+                // Убираем "Bearer " из токена, если он есть
+                if (token.StartsWith("Bearer "))
+                {
+                    token = token.Substring("Bearer ".Length);
+                }
+
+                var handler = new JwtSecurityTokenHandler();
+
+                // Считываем токен
+                var jwtToken = handler.ReadJwtToken(token);
+                var payload = jwtToken.Payload;
+
+                // Ищем значение клейма
+                return payload.Claims.FirstOrDefault(c => c.Type == key)?.Value;
             }
-
-            var handler = new JwtSecurityTokenHandler();
-            var payload = handler.ReadJwtToken(token).Payload;
-
-            return payload.Claims.FirstOrDefault(c => c.Type.Split('/').Last() == role)?.Value;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error parsing token: {ex.Message}");
+                return null;
+            }
         }
     }
 }

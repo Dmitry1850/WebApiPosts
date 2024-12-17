@@ -5,12 +5,24 @@ using MainProgram.Interfaces;
 using MainProgram.Repositories;
 using Microsoft.IdentityModel.Tokens;
 using MainProgram.Auth;
-using MainProgram.Common;
+using MainProgram.Users;
 
 namespace MainProgram.Services;
 
 public class TokenService(IAuthSettings authSettings, IUserRepository userRepository) : ITokenService
 {
+    public IEnumerable<Claim> GetClaims(Guid userId, int role, string email)
+    {
+        var roleName = role == (int)Role.Author ? "Author" : "Reader"; 
+
+        return new List<Claim>
+    {
+        new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+        new Claim(ClaimTypes.Role, roleName),
+        new Claim(ClaimTypes.Email, email)
+    };
+    }
+
     public Task<string> CreateToken(IEnumerable<Claim> claims, int tokenExpiresAfterHours = 0)
     {
         var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authSettings.Key));
@@ -20,7 +32,12 @@ public class TokenService(IAuthSettings authSettings, IUserRepository userReposi
             tokenExpiresAfterHours = authSettings.TokenExpiresAfterHours;
         }
 
-        var token = new JwtSecurityToken(authSettings.Issuer, authSettings.Audience, claims, null, DateTime.UtcNow.AddHours(tokenExpiresAfterHours),
+        var token = new JwtSecurityToken(
+            authSettings.Issuer,
+            authSettings.Audience,
+            claims,
+            null,
+            DateTime.UtcNow.AddHours(tokenExpiresAfterHours),
             new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
 
         return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
@@ -31,17 +48,20 @@ public class TokenService(IAuthSettings authSettings, IUserRepository userReposi
         var user = await userRepository.GetUser(refreshToken);
         if (user == null)
         {
-            return null;
+            return null; 
         }
 
-        var claims = Jwt.GetClaims(user.UserId, user.Role, user.Email);
-        var newRefreshToken = CreateToken(new List<Claim>());
-        var newAccessToken = CreateToken(await claims, 24);
+        // Используем текущий метод GetClaims
+        var claims = GetClaims(user.UserId, user.Role, user.Email);
+
+        // Генерация новых токенов
+        var newAccessToken = await CreateToken(claims, 24);
+        var newRefreshToken = await CreateToken(new List<Claim>());
 
         return new AuthResponse
         {
-            AccessToken = await newAccessToken,
-            RefreshToken = await newRefreshToken
+            AccessToken = newAccessToken,
+            RefreshToken = newRefreshToken
         };
     }
 }

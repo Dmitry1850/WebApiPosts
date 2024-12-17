@@ -6,9 +6,7 @@ namespace MainProgram.Users
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum Role
     {
-        None = 0,
-        User = 1,
-        Admin = 2,
-        All = User | Admin
+        Author = 1,
+        Reader = 2
     }
 }

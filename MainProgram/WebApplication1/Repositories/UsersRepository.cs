@@ -6,15 +6,9 @@ namespace MainProgram.Repositories
     {
         private List<User> usersBase = new List<User>();
 
-        public async Task<User> GetUser(string Email)
+        public async Task<User?> GetUser(string email)
         {
-            for (int i = 0; i < usersBase.Count; i++)
-            {
-                if (usersBase[i].Email == Email)
-                    return await Task.Run(() => (usersBase[i]));
-            }
-
-            return null;
+            return await Task.FromResult(usersBase.FirstOrDefault(u => u.Email == email));
         }
         public async Task<List<User>> AddUser(User user)
         {
