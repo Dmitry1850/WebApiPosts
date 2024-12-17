@@ -18,28 +18,36 @@ using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Регистрация сервисов
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerWithAuth();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddRepositories();
 builder.Services.AddServices();
-builder.Services.AddJwtAuth(builder.Configuration);
+builder.Services.AddJwtAuth(builder.Configuration); // Настройка JWT аутентификации
 
 builder.Services.AddScoped<IPostRepository, PostsRepository>();
 
 var app = builder.Build();
 
+// Конфигурация middleware
 app.UseCors(cors =>
 {
     cors.AllowAnyHeader();
     cors.AllowAnyMethod();
     cors.AllowAnyOrigin();
 });
+
 app.UseSwagger();
 app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/program/swagger.json", "MainProgram API v1"));
-app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// Добавляем UseAuthentication перед UseAuthorization
+app.UseAuthentication(); // Это ключевой вызов для аутентификации
 app.UseAuthorization();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.MapControllers();
 
 app.Run();
