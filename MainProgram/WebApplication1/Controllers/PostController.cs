@@ -50,7 +50,15 @@ namespace MainProgram.Controllers
         public async Task<IActionResult> GetPosts()
         {
             var userRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
+            var claim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+
+            if (claim == null)
+            {
+                return Unauthorized(new { Message = "User identifier claim is missing." });
+            }
+
+            var userId = claim.Value;
 
             if (userRole == "Author")
             {
