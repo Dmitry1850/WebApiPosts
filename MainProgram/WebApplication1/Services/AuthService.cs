@@ -17,10 +17,10 @@ namespace MainProgram.Services
                 return null;
 
             var refreshToken = await tokenService.CreateToken(new List<Claim>());
-            User newUser = new User(Guid.NewGuid(), registerModel.Email, await Hash.GetHash(registerModel.Password), (int)Role.User, refreshToken, DateTime.UtcNow.AddHours(authSettings.TokenExpiresAfterHours));
+            User newUser = new User(Guid.NewGuid(), registerModel.Email, await Hash.GetHash(registerModel.Password), (int)Role.Author, refreshToken, DateTime.UtcNow.AddHours(authSettings.TokenExpiresAfterHours));
             var id = await userRepository.AddUser(newUser);
 
-            var claims = await Jwt.GetClaims(newUser.UserId, (int)Role.User, registerModel.Email);
+            var claims = tokenService.GetClaims(newUser.UserId, (int)Role.Author, registerModel.Email);
             var accessToken = await tokenService.CreateToken(claims, 24);
 
             return new AuthResponse
@@ -37,12 +37,13 @@ namespace MainProgram.Services
             if (user == null || user.PasswordHash != await Hash.GetHash(loginModel.Password))
                 return null;
 
-            var claims = Jwt.GetClaims(user.UserId, user.Role, user.Email);
-            var accessToken = tokenService.CreateToken(await claims, 24);
+            // Заменяем Jwt.GetClaims на вызов TokenService
+            var claims = tokenService.GetClaims(user.UserId, user.Role, user.Email); 
+            var accessToken = await tokenService.CreateToken(claims, 24);
 
             return new AuthResponse
             {
-                AccessToken = await accessToken,
+                AccessToken = accessToken,
                 RefreshToken = user.RefreshToken,
             };
         }

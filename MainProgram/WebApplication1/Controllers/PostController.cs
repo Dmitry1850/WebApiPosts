@@ -72,7 +72,7 @@ namespace MainProgram.Controllers
                 return Ok(new { Message = "List of published posts.", Posts = posts });
             }
 
-            return Forbid("Access denied.");
+            return Forbid(); 
         }
 
         [Authorize(Roles = "Author")]

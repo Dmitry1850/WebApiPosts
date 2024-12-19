@@ -2,8 +2,8 @@
 {
     public class Post
     {
-        public Post(Guid postID, Guid authorID, string idempotencyKey, string title, string content, DateTime createdAt, DateTime updatedAt, string status) 
-        { 
+        public Post(Guid postID, Guid authorID, string idempotencyKey, string title, string content, DateTime createdAt, DateTime updatedAt, string status)
+        {
             PostId = Guid.NewGuid();
             AuthorId = authorID;
             IdempotencyKey = idempotencyKey;
@@ -12,6 +12,7 @@
             CreatedAt = createdAt;
             UpdatedAt = updatedAt;
             Status = status;
+            Images = new List<Image>(); 
         }
 
         public Guid PostId { get; set; }
