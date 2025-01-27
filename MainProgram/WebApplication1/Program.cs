@@ -14,9 +14,22 @@ using Minio;
 using MainProgram.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
+using MainProgram.Data;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Получаем строки подключения из конфигурации
+var connectionStringUsersDb = builder.Configuration.GetConnectionString("UsersDb");
+var connectionStringPostsDb = builder.Configuration.GetConnectionString("PostsDb");
+
+// Добавляем контексты баз данных
+builder.Services.AddDbContext<ApplicationDbContextUsers>(options =>
+    options.UseNpgsql(connectionStringUsersDb));
+
+builder.Services.AddDbContext<ApplicationDbContextPosts>(options =>
+    options.UseNpgsql(connectionStringPostsDb));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -24,7 +37,7 @@ builder.Services.AddSwaggerWithAuth();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddRepositories();
 builder.Services.AddServices();
-builder.Services.AddJwtAuth(builder.Configuration); 
+builder.Services.AddJwtAuth(builder.Configuration);
 
 builder.Services.AddScoped<IPostRepository, PostsRepository>();
 
@@ -48,4 +61,3 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapControllers();
 
 app.Run();
-

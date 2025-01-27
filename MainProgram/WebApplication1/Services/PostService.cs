@@ -3,16 +3,19 @@ using MainProgram.Exceptions;
 using MainProgram.Interfaces;
 using MainProgram.Repositories;
 using MainProgram.Model;
+using Microsoft.EntityFrameworkCore;
 
 namespace MainProgram.Auth
 {
     public class PostService : IPostCervice
     {
         private IPostRepository _postRepository;
+        private readonly ApplicationDbContextPosts _context; // Добавляем контекст данных
 
-        public PostService(IPostRepository postRepository)
+        public PostService(IPostRepository postRepository, ApplicationDbContextPosts context)
         {
             _postRepository = postRepository;
+            _context = context; // Инициализация контекста
         }
 
         public async Task<Post?> GetPostById(Guid id)
@@ -26,14 +29,14 @@ namespace MainProgram.Auth
         }
 
         public async Task<List<Post>> GetPublishedPosts()
-        { 
+        {
             return await _postRepository.GetPublishedPosts();
         }
 
         public async Task<Post> CreatePost(string authorId, CreatePostRequest postRequest)
         {
             Post newPost = new Post(Guid.NewGuid(), Guid.Parse(authorId), postRequest.IdempotencyKey, postRequest.Title, postRequest.Content, DateTime.UtcNow, DateTime.UtcNow, "Draft");
-            
+
             await _postRepository.AddPost(newPost);
 
             return newPost;
@@ -56,7 +59,6 @@ namespace MainProgram.Auth
             return post;
         }
 
-
         public async Task<bool> DeleteImage(Guid postId, Guid imageId, string authorId)
         {
             var post = await _postRepository.GetPostById(postId);
@@ -74,6 +76,8 @@ namespace MainProgram.Auth
 
             post.Images.Remove(image);
 
+            await _context.SaveChangesAsync(); // Сохраняем изменения в базе данных
+
             return true;
         }
 
@@ -82,8 +86,14 @@ namespace MainProgram.Auth
             var post = await _postRepository.GetPostById(postId);
             if (post == null)
                 throw new NotFoundException("Post not found.");
+
             if (post.AuthorId.ToString() != authorId)
                 throw new Exception("Access denied.");
+
+            if (post.Images == null)
+            {
+                post.Images = new List<Image>();
+            }
 
             var uploadedImages = new List<Image>();
 
@@ -104,6 +114,8 @@ namespace MainProgram.Auth
                 uploadedImages.Add(newImage);
             }
 
+            await _context.SaveChangesAsync(); // Сохраняем изменения в базе данных
+
             return uploadedImages;
         }
 
@@ -122,6 +134,5 @@ namespace MainProgram.Auth
 
             return post;
         }
-
     }
 }

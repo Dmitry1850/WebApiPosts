@@ -15,6 +15,8 @@
             Images = new List<Image>(); 
         }
 
+        public Post() { }
+
         public Guid PostId { get; set; }
         public Guid AuthorId { get; set; }
         public string IdempotencyKey { get; set; }

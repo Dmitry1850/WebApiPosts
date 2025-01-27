@@ -2,8 +2,10 @@
 {
     public class Image
     {
+        public Image() { }
+
         public Image(Guid imageID, Guid postID, string imageURL, DateTime createdAt)
-        { 
+        {
             ImageId = imageID;
             PostId = postID;
             ImageUrl = imageURL;
