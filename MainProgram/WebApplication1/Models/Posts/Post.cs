@@ -1,4 +1,6 @@
-﻿namespace MainProgram.Model
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace MainProgram.Model
 {
     public class Post
     {
@@ -12,8 +14,10 @@
             CreatedAt = createdAt;
             UpdatedAt = updatedAt;
             Status = status;
-            Images = new List<Image>(); 
+            Images = new List<Image>();
         }
+
+        public Post() { }
 
         public Guid PostId { get; set; }
         public Guid AuthorId { get; set; }
@@ -24,5 +28,8 @@
         public DateTime UpdatedAt { get; set; }
         public string Status { get; set; } // Draft or Published
         public List<Image> Images { get; set; }
+
+        //[Timestamp] 
+        //public byte[] RowVersion { get; set; }
     }
 }

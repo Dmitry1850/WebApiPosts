@@ -14,9 +14,20 @@ using Minio;
 using MainProgram.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using MainProgram.Data;
+using Microsoft.EntityFrameworkCore;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionStringUsersDb = builder.Configuration.GetConnectionString("UsersDb");
+var connectionStringPostsDb = builder.Configuration.GetConnectionString("PostsDb");
+
+builder.Services.AddDbContext<ApplicationDbContextUsers>(options =>
+    options.UseNpgsql(connectionStringUsersDb));
+
+builder.Services.AddDbContext<ApplicationDbContextPosts>(options =>
+    options.UseNpgsql(connectionStringPostsDb));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

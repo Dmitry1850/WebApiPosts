@@ -10,6 +10,7 @@
             CreatedAt = createdAt;
         }
 
+        public Image() { }
         public Guid ImageId { get; set; }
         public Guid PostId { get; set; }
         public string ImageUrl { get; set; }
