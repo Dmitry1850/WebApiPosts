@@ -1,21 +1,15 @@
-﻿namespace MainProgram.Model
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace MainProgram.Model
 {
     public class Image
     {
-        public Image(Guid imageID, Guid postID, string imageURL, DateTime createdAt)
-        {
-            ImageId = imageID;
-            PostId = postID;
-            ImageUrl = imageURL;
-            CreatedAt = createdAt;
-        }
-
-        public Image() { }
-
-        public Guid ImageId { get; set; }
+        [Key]
+        public Guid ImageId { get; set; } = Guid.NewGuid();
         public Guid PostId { get; set; }
-        public string ImageUrl { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public Post? Post { get; set; }
+        public string? ImageUrl { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
+
+

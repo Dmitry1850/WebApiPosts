@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace MainProgram.API.Migrations.ApplicationDbContextUsersMigrations
+namespace MainProgram.API.Migrations.UsersDb
 {
     /// <inheritdoc />
-    public partial class UpdateUserModel : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

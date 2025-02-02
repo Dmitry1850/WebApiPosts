@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  users-db:
+    image: postgres:latest
+    container_name: users-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: qwertyui
+      POSTGRES_DB: users
+    ports:
+      - "5432:5432"
+    volumes:
+      - users_data:/var/lib/postgresql/data
+
+  posts-db:
+    image: postgres:latest
+    container_name: posts-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: qwertyui
+      POSTGRES_DB: posts
+    ports:
+      - "5433:5432"
+    volumes:
+      - posts_data:/var/lib/postgresql/data
+
+volumes:
+  users_data:
+  posts_data:

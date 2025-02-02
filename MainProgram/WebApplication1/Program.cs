@@ -3,12 +3,23 @@ using MainProgram.Extensions;
 using MainProgram.Middlewares;
 using MainProgram.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Minio;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Получаем строки подключения
 var connectionStringUsersDb = builder.Configuration.GetConnectionString("UsersDb");
 var connectionStringPostsDb = builder.Configuration.GetConnectionString("PostsDb");
+
+// Регистрируем MinioClient
+builder.Services.AddSingleton<IMinioClient>(serviceProvider =>
+{
+    var minioClient = new MinioClient()
+        .WithEndpoint("your-minio-endpoint") // укажи свой endpoint
+        .WithCredentials("your-access-key", "your-secret-key") // укажи ключи
+        .Build();
+    return minioClient;
+});
 
 // Регистрируем DbContext для пользователей
 builder.Services.AddDbContext<ApplicationDbContextUsers>(options =>
@@ -27,6 +38,8 @@ builder.Services.AddRepositories();
 builder.Services.AddServices();
 builder.Services.AddJwtAuth(builder.Configuration);
 
+builder.Services.AddSingleton<IMinioRepository, MinioRepository>();
+builder.Services.AddScoped<IUserRepository, UsersRepository>();
 builder.Services.AddScoped<IPostRepository, PostsRepository>();
 
 var app = builder.Build();

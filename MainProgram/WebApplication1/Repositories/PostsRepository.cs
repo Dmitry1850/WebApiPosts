@@ -2,6 +2,7 @@
 using MainProgram.Model;
 using MainProgram.Data;
 using MainProgram.Exceptions;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace MainProgram.Repositories
 {
@@ -19,6 +20,11 @@ namespace MainProgram.Repositories
             return await _context.Posts
                 .Include(p => p.Images)
                 .FirstOrDefaultAsync(p => p.PostId == postId);
+        }
+        public async Task AddImage(Image image)
+        {
+            _context.Set<Image>().Add(image);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<List<Post>> GetPostsByAuthorId(Guid authorId)
@@ -45,69 +51,13 @@ namespace MainProgram.Repositories
 
         public async Task UpdatePost(Post post)
         {
-            var existingPost = await _context.Posts
-                                              .FirstOrDefaultAsync(p => p.PostId == post.PostId);
-
-            if (existingPost == null)
+            var existingPost = await _context.Posts.FindAsync(post.PostId);
+            if (existingPost != null)
             {
-                throw new NotFoundException("Post not found.");
-            }
-
-            // Проверка RowVersion на конфликт
-            if (!existingPost.RowVersion.SequenceEqual(post.RowVersion))
-            {
-                throw new DbUpdateConcurrencyException("The record was updated by another user.");
-            }
-
-            // Обновление данных поста
-            existingPost.Title = post.Title;
-            existingPost.Content = post.Content;
-            existingPost.UpdatedAt = DateTime.UtcNow;
-
-            // Обновляем RowVersion
-            existingPost.RowVersion = post.RowVersion;
-
-            bool saved = false;
-            int retryCount = 3;
-
-            for (int i = 0; i < retryCount; i++)
-            {
-                try
-                {
-                    await _context.SaveChangesAsync();
-                    saved = true;
-                    break;
-                }
-                catch (DbUpdateConcurrencyException ex)
-                {
-                    Console.WriteLine($"[UpdatePost] Конфликт обновления! Попытка {i + 1}. {ex.Message}");
-
-                    // Повторно загружаем актуальные данные и проверяем RowVersion
-                    existingPost = await _context.Posts
-                                                  .FirstOrDefaultAsync(p => p.PostId == post.PostId);
-                    if (existingPost == null)
-                    {
-                        throw new NotFoundException("Post not found during conflict resolution.");
-                    }
-
-                    // Проверяем RowVersion для повторного конфликта
-                    if (!existingPost.RowVersion.SequenceEqual(post.RowVersion))
-                    {
-                        throw new DbUpdateConcurrencyException("The record was updated by another user.");
-                    }
-
-                    // Обновляем RowVersion и пробуем сохранить снова
-                    existingPost.RowVersion = post.RowVersion;
-                }
-            }
-
-            if (!saved)
-            {
-                throw new Exception("Failed to save the post after multiple attempts due to concurrency conflict.");
+                _context.Entry(existingPost).CurrentValues.SetValues(post);
+                await _context.SaveChangesAsync();
             }
         }
-
-
 
         public async Task DeletePost(Guid postId)
         {

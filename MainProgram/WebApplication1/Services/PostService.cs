@@ -4,16 +4,20 @@ using MainProgram.Interfaces;
 using MainProgram.Repositories;
 using MainProgram.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Minio.Exceptions;
 
 namespace MainProgram.Auth
 {
     public class PostService : IPostCervice
     {
         private readonly IPostRepository _postRepository;
+        private readonly IMinioRepository _minioRepository;
 
-        public PostService(IPostRepository postRepository)
+        public PostService(IPostRepository postRepository, IMinioRepository minioRepository)
         {
             _postRepository = postRepository;
+            _minioRepository = minioRepository;
         }
 
         public async Task<Post?> GetPostById(Guid id)
@@ -33,8 +37,21 @@ namespace MainProgram.Auth
 
         public async Task<Post> CreatePost(string authorId, CreatePostRequest postRequest)
         {
-            Post newPost = new Post(Guid.NewGuid(), Guid.Parse(authorId), postRequest.IdempotencyKey, postRequest.Title, postRequest.Content, DateTime.UtcNow, DateTime.UtcNow, "Draft");
+            var newPost = new Post
+            {
+                PostId = Guid.NewGuid(),
+                AuthorId = Guid.Parse(authorId),
+                IdempotencyKey = postRequest.IdempotencyKey,
+                Title = postRequest.Title,
+                Content = postRequest.Content,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                Status = "Draft"
+            };
+
+            // Сохраняем новый пост в базе данных
             await _postRepository.AddPost(newPost);
+
             return newPost;
         }
 
@@ -74,78 +91,40 @@ namespace MainProgram.Auth
 
         public async Task<List<Image>> AddImage(Guid postId, string authorId, List<IFormFile> images)
         {
-            Console.WriteLine($"[AddImage] Начало метода для поста {postId}");
-
             var post = await _postRepository.GetPostById(postId);
             if (post == null)
-            {
-                Console.WriteLine($"[AddImage] Пост {postId} не найден.");
                 throw new NotFoundException("Post not found.");
-            }
-
             if (post.AuthorId.ToString() != authorId)
-            {
-                Console.WriteLine($"[AddImage] Доступ запрещен для пользователя {authorId}");
-                throw new Exception("Access denied.");
-            }
+                throw new ForbiddenException("Access denied.");
 
-            Console.WriteLine($"[AddImage] Найден пост {postId}, автор {authorId}, количество картинок: {images.Count}");
+            var bucketName = "post-images";
+            await _minioRepository.CreateBucketAsync(bucketName);
 
             var uploadedImages = new List<Image>();
-
-            if (post.Images == null)
-                post.Images = new List<Image>();
 
             foreach (var image in images)
             {
                 if (image.Length == 0) continue;
 
                 var id = Guid.NewGuid();
-                var imageUrl = "https://example.com"; 
+                var objectName = $"{postId}/{id}";
 
-                var newImage = new Image(id, postId, imageUrl, DateTime.UtcNow);
-                post.Images.Add(newImage);
+                await using var stream = image.OpenReadStream();
+                await _minioRepository.UploadObjectAsync(bucketName, objectName, stream, image.Length, image.ContentType);
+
+                var imageUrl = await _minioRepository.GetPresignedUrlAsync(bucketName, objectName, 3600);
+
+                var newImage = new Image
+                {
+                    ImageId = id,
+                    PostId = postId,
+                    ImageUrl = imageUrl,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _postRepository.AddImage(newImage);
                 uploadedImages.Add(newImage);
             }
-
-            Console.WriteLine($"[AddImage] Добавлено {uploadedImages.Count} изображений, пробуем сохранить...");
-
-            bool saved = false;
-            int retryCount = 3;
-
-            for (int i = 0; i < retryCount; i++)
-            {
-                try
-                {
-                    await _postRepository.UpdatePost(post);
-                    Console.WriteLine("[AddImage] Успешное обновление поста!");
-                    saved = true;
-                    break;  
-                }
-                catch (DbUpdateConcurrencyException ex)
-                {
-                    Console.WriteLine($"[AddImage] Конфликт обновления! Попытка {i + 1}. {ex.Message}");
-
-                    post = await _postRepository.GetPostById(postId);
-                    if (post == null)
-                    {
-                        Console.WriteLine($"[AddImage] Пост {postId} не найден при повторном запросе.");
-                        throw new NotFoundException("Post not found.");
-                    }
-
-                    foreach (var img in uploadedImages)
-                        if (!post.Images.Any(i => i.ImageId == img.ImageId))
-                            post.Images.Add(img);
-                }
-            }
-
-            if (!saved)
-            {
-                Console.WriteLine("[AddImage] Ошибка: запись так и не обновилась после 3 попыток!");
-                throw new Exception("Failed to update the record after multiple attempts.");
-            }
-
-            Console.WriteLine($"[AddImage] Метод завершён, возвращаем {uploadedImages.Count} изображений.");
             return uploadedImages;
         }
 
