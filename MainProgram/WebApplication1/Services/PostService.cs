@@ -3,16 +3,21 @@ using MainProgram.Exceptions;
 using MainProgram.Interfaces;
 using MainProgram.Repositories;
 using MainProgram.Model;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Minio.Exceptions;
 
 namespace MainProgram.Auth
 {
     public class PostService : IPostCervice
     {
-        private IPostRepository _postRepository;
+        private readonly IPostRepository _postRepository;
+        private readonly IMinioRepository _minioRepository;
 
-        public PostService(IPostRepository postRepository)
+        public PostService(IPostRepository postRepository, IMinioRepository minioRepository)
         {
             _postRepository = postRepository;
+            _minioRepository = minioRepository;
         }
 
         public async Task<Post?> GetPostById(Guid id)
@@ -26,14 +31,25 @@ namespace MainProgram.Auth
         }
 
         public async Task<List<Post>> GetPublishedPosts()
-        { 
+        {
             return await _postRepository.GetPublishedPosts();
         }
 
         public async Task<Post> CreatePost(string authorId, CreatePostRequest postRequest)
         {
-            Post newPost = new Post(Guid.NewGuid(), Guid.Parse(authorId), postRequest.IdempotencyKey, postRequest.Title, postRequest.Content, DateTime.UtcNow, DateTime.UtcNow, "Draft");
-            
+            var newPost = new Post
+            {
+                PostId = Guid.NewGuid(),
+                AuthorId = Guid.Parse(authorId),
+                IdempotencyKey = postRequest.IdempotencyKey,
+                Title = postRequest.Title,
+                Content = postRequest.Content,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                Status = "Draft"
+            };
+
+            // Сохраняем новый пост в базе данных
             await _postRepository.AddPost(newPost);
 
             return newPost;
@@ -52,15 +68,12 @@ namespace MainProgram.Auth
             post.UpdatedAt = DateTime.UtcNow;
 
             await _postRepository.UpdatePost(post);
-
             return post;
         }
-
 
         public async Task<bool> DeleteImage(Guid postId, Guid imageId, string authorId)
         {
             var post = await _postRepository.GetPostById(postId);
-
             if (post == null)
                 throw new NotFoundException("Post not found.");
             if (post.AuthorId.ToString() != authorId)
@@ -70,10 +83,9 @@ namespace MainProgram.Auth
             if (image == null)
                 throw new NotFoundException("Image not found.");
 
-            var objectName = $"{postId}/{imageId}";
-
             post.Images.Remove(image);
 
+            await _postRepository.UpdatePost(post);
             return true;
         }
 
@@ -83,7 +95,10 @@ namespace MainProgram.Auth
             if (post == null)
                 throw new NotFoundException("Post not found.");
             if (post.AuthorId.ToString() != authorId)
-                throw new Exception("Access denied.");
+                throw new ForbiddenException("Access denied.");
+
+            var bucketName = "post-images";
+            await _minioRepository.CreateBucketAsync(bucketName);
 
             var uploadedImages = new List<Image>();
 
@@ -95,17 +110,24 @@ namespace MainProgram.Auth
                 var objectName = $"{postId}/{id}";
 
                 await using var stream = image.OpenReadStream();
+                await _minioRepository.UploadObjectAsync(bucketName, objectName, stream, image.Length, image.ContentType);
 
-                string imageUrl = "https://example.com/image.jpg";
+                var imageUrl = await _minioRepository.GetPresignedUrlAsync(bucketName, objectName, 3600);
 
-                var newImage = new Image(id, postId, imageUrl, DateTime.UtcNow);
+                var newImage = new Image
+                {
+                    ImageId = id,
+                    PostId = postId,
+                    ImageUrl = imageUrl,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-                post.Images.Add(newImage);
+                await _postRepository.AddImage(newImage);
                 uploadedImages.Add(newImage);
             }
-
             return uploadedImages;
         }
+
 
         public async Task<Post?> PublishPost(Guid postId, string authorId, PublishPostRequest request)
         {
@@ -119,9 +141,19 @@ namespace MainProgram.Auth
             post.UpdatedAt = DateTime.UtcNow;
 
             await _postRepository.UpdatePost(post);
-
             return post;
         }
 
+        public async Task<bool> DeletePost(Guid postId, string authorId)
+        {
+            var post = await _postRepository.GetPostById(postId);
+            if (post == null)
+                throw new NotFoundException("Post not found.");
+            if (post.AuthorId.ToString() != authorId)
+                throw new Exception("Access denied.");
+
+            await _postRepository.DeletePost(postId);
+            return true;
+        }
     }
 }

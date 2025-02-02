@@ -10,10 +10,10 @@ namespace MainProgram.Controllers
     [Route("api/[controller]")]
     public class PostController : ControllerBase
     {
-        private IPostCervice _postService;
+        private readonly IPostCervice _postService;
 
         public PostController(IPostCervice postService)
-        { 
+        {
             _postService = postService;
         }
 
@@ -32,6 +32,12 @@ namespace MainProgram.Controllers
         public async Task<IActionResult> AddImagesToPost([FromRoute] string postId, [FromForm] List<IFormFile> images)
         {
             var authorId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
+            if (images == null || !images.Any())
+            {
+                return BadRequest(new { Message = "No images provided." });
+            }
+
             var uploadedImages = await _postService.AddImage(Guid.Parse(postId), authorId, images);
             return Created("", new { UploadedImages = uploadedImages });
         }
@@ -50,7 +56,6 @@ namespace MainProgram.Controllers
         public async Task<IActionResult> GetPosts()
         {
             var userRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-
             var claim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
 
             if (claim == null)
@@ -72,7 +77,7 @@ namespace MainProgram.Controllers
                 return Ok(new { Message = "List of published posts.", Posts = posts });
             }
 
-            return Forbid(); 
+            return Forbid();
         }
 
         [Authorize(Roles = "Author")]
@@ -82,7 +87,7 @@ namespace MainProgram.Controllers
             var post = await _postService.GetPostById(Guid.Parse(id));
 
             if (post == null)
-                return NotFound("Post not found.");
+                return NotFound(new { Message = "Post not found." });
 
             return Ok(post);
         }
@@ -104,9 +109,22 @@ namespace MainProgram.Controllers
             var success = await _postService.DeleteImage(Guid.Parse(postId), Guid.Parse(imageId), authorId);
 
             if (!success)
-                return NotFound("Image or post not found, or access denied.");
+                return NotFound(new { Message = "Image or post not found, or access denied." });
 
             return Ok(new { Message = "Image successfully deleted." });
+        }
+
+        [Authorize(Roles = "Author")]
+        [HttpDelete("{postId}")]
+        public async Task<IActionResult> DeletePost([FromRoute] string postId)
+        {
+            var authorId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            var success = await _postService.DeletePost(Guid.Parse(postId), authorId);
+
+            if (!success)
+                return NotFound(new { Message = "Post not found or access denied." });
+
+            return Ok(new { Message = "Post successfully deleted." });
         }
     }
 }

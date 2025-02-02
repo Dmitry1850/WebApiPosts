@@ -1,35 +1,50 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using MainProgram.Services;
-using MainProgram.Interfaces;
-using MainProgram.Auth;
-using MainProgram.Middlewares;
+using MainProgram.Data;
 using MainProgram.Extensions;
+using MainProgram.Middlewares;
 using MainProgram.Repositories;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Minio;
-using MainProgram.Common;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Получаем строки подключения
+var connectionStringUsersDb = builder.Configuration.GetConnectionString("UsersDb");
+var connectionStringPostsDb = builder.Configuration.GetConnectionString("PostsDb");
+
+// Регистрируем MinioClient
+builder.Services.AddSingleton<IMinioClient>(serviceProvider =>
+{
+    var minioClient = new MinioClient()
+        .WithEndpoint("your-minio-endpoint") // укажи свой endpoint
+        .WithCredentials("your-access-key", "your-secret-key") // укажи ключи
+        .Build();
+    return minioClient;
+});
+
+// Регистрируем DbContext для пользователей
+builder.Services.AddDbContext<ApplicationDbContextUsers>(options =>
+    options.UseNpgsql(connectionStringUsersDb));
+
+// Регистрируем DbContext для постов
+builder.Services.AddDbContext<ApplicationDbContextPosts>(options =>
+    options.UseNpgsql(connectionStringPostsDb));
+
+// Дальше идет остальная конфигурация
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerWithAuth();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddRepositories();
 builder.Services.AddServices();
-builder.Services.AddJwtAuth(builder.Configuration); 
+builder.Services.AddJwtAuth(builder.Configuration);
 
+builder.Services.AddSingleton<IMinioRepository, MinioRepository>();
+builder.Services.AddScoped<IUserRepository, UsersRepository>();
 builder.Services.AddScoped<IPostRepository, PostsRepository>();
 
 var app = builder.Build();
 
+// Настройка и запуск приложения
 app.UseCors(cors =>
 {
     cors.AllowAnyHeader();
@@ -48,4 +63,3 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapControllers();
 
 app.Run();
-
