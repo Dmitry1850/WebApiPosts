@@ -28,19 +28,14 @@ namespace MainProgram.Common
         {
             try
             {
-                // Убираем "Bearer " из токена, если он есть
                 if (token.StartsWith("Bearer "))
-                {
                     token = token.Substring("Bearer ".Length);
-                }
 
                 var handler = new JwtSecurityTokenHandler();
 
-                // Считываем токен
                 var jwtToken = handler.ReadJwtToken(token);
                 var payload = jwtToken.Payload;
 
-                // Ищем значение клейма
                 return payload.Claims.FirstOrDefault(c => c.Type == key)?.Value;
             }
             catch (Exception ex)

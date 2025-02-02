@@ -20,9 +20,7 @@ namespace MainProgram.Repositories
         public async Task CreateBucketAsync(string bucketName)
         {
             if (!await BucketExistsAsync(bucketName))
-            {
                 await _minioClient.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucketName));
-            }
         }
 
         public async Task UploadObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType)

@@ -50,11 +50,8 @@ public class TokenService(IAuthSettings authSettings, IUserRepository userReposi
         {
             return null; 
         }
-
-        // Используем текущий метод GetClaims
         var claims = GetClaims(user.UserId, user.Role, user.Email);
 
-        // Генерация новых токенов
         var newAccessToken = await CreateToken(claims, 24);
         var newRefreshToken = await CreateToken(new List<Claim>());
 

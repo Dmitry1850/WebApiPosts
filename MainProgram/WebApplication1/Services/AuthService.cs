@@ -37,7 +37,6 @@ namespace MainProgram.Services
             if (user == null || user.PasswordHash != await Hash.GetHash(loginModel.Password))
                 return null;
 
-            // Заменяем Jwt.GetClaims на вызов TokenService
             var claims = tokenService.GetClaims(user.UserId, user.Role, user.Email); 
             var accessToken = await tokenService.CreateToken(claims, 24);
 
