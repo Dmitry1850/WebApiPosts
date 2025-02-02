@@ -34,9 +34,7 @@ namespace MainProgram.Controllers
             var authorId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
 
             if (images == null || !images.Any())
-            {
                 return BadRequest(new { Message = "No images provided." });
-            }
 
             var uploadedImages = await _postService.AddImage(Guid.Parse(postId), authorId, images);
             return Created("", new { UploadedImages = uploadedImages });
@@ -59,9 +57,7 @@ namespace MainProgram.Controllers
             var claim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
 
             if (claim == null)
-            {
                 return Unauthorized(new { Message = "User identifier claim is missing." });
-            }
 
             var userId = claim.Value;
 

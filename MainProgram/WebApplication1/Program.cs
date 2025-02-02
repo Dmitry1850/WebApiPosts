@@ -7,29 +7,24 @@ using Minio;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Получаем строки подключения
 var connectionStringUsersDb = builder.Configuration.GetConnectionString("UsersDb");
 var connectionStringPostsDb = builder.Configuration.GetConnectionString("PostsDb");
 
-// Регистрируем MinioClient
 builder.Services.AddSingleton<IMinioClient>(serviceProvider =>
 {
     var minioClient = new MinioClient()
-        .WithEndpoint("your-minio-endpoint") // укажи свой endpoint
-        .WithCredentials("your-access-key", "your-secret-key") // укажи ключи
+        .WithEndpoint("localhost:9000") 
+        .WithCredentials("minio-access-key", "minio-secret-key")
         .Build();
     return minioClient;
 });
 
-// Регистрируем DbContext для пользователей
 builder.Services.AddDbContext<ApplicationDbContextUsers>(options =>
     options.UseNpgsql(connectionStringUsersDb));
 
-// Регистрируем DbContext для постов
 builder.Services.AddDbContext<ApplicationDbContextPosts>(options =>
     options.UseNpgsql(connectionStringPostsDb));
 
-// Дальше идет остальная конфигурация
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerWithAuth();
@@ -44,7 +39,6 @@ builder.Services.AddScoped<IPostRepository, PostsRepository>();
 
 var app = builder.Build();
 
-// Настройка и запуск приложения
 app.UseCors(cors =>
 {
     cors.AllowAnyHeader();

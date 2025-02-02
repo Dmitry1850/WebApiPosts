@@ -11,5 +11,3 @@ namespace MainProgram.Model
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
-
-

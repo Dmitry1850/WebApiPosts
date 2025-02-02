@@ -13,9 +13,7 @@ namespace MainProgram.Controllers
         {
             var response = await authService.Login(loginModel);
             if (response == null)
-            {
                 return BadRequest();
-            }
 
             return Ok(response);
         }
@@ -25,9 +23,7 @@ namespace MainProgram.Controllers
         {
             var response = await authService.Register(registerModel);
             if (response == null)
-            {
                 return BadRequest();
-            }
 
             return Ok(response);
         }

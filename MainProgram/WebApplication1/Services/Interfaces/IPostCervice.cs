@@ -14,6 +14,5 @@ namespace MainProgram.Interfaces
         Task<List<Image>> AddImage(Guid postId, string authorId, List<IFormFile> images);
         Task<Post?> PublishPost(Guid postId, string authorId, PublishPostRequest request);
         Task<bool> DeletePost(Guid postId, string authorId);
-
     }
 }

@@ -49,7 +49,6 @@ namespace MainProgram.Auth
                 Status = "Draft"
             };
 
-            // Сохраняем новый пост в базе данных
             await _postRepository.AddPost(newPost);
 
             return newPost;
