@@ -17,7 +17,10 @@ namespace MainProgram.Model
             Images = new List<Image>();
         }
 
-        public Post() { }
+        public Post()
+        {
+            Images = new List<Image>();
+        }
 
         public Guid PostId { get; set; }
         public Guid AuthorId { get; set; }
@@ -26,10 +29,10 @@ namespace MainProgram.Model
         public string Content { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        public string Status { get; set; } // Draft or Published
-        public List<Image> Images { get; set; }
+        public string Status { get; set; } // "Draft" или "Published"
 
-        //[Timestamp] 
-        //public byte[] RowVersion { get; set; }
+        public List<Image> Images { get; set; } = new List<Image>();
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
     }
 }

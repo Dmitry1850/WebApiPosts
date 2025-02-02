@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MainProgram.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContextPosts))]
-    [Migration("20250129155851_AddRowVersionToPost")]
-    partial class AddRowVersionToPost
+    [Migration("20250201165707_AddRowVersionToPostV2")]
+    partial class AddRowVersionToPostV2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -92,11 +92,13 @@ namespace MainProgram.API.Migrations
 
             modelBuilder.Entity("MainProgram.Model.Image", b =>
                 {
-                    b.HasOne("MainProgram.Model.Post", null)
+                    b.HasOne("MainProgram.Model.Post", "Post")
                         .WithMany("Images")
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("MainProgram.Model.Post", b =>

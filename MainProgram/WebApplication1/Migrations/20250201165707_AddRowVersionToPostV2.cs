@@ -5,7 +5,7 @@
 namespace MainProgram.API.Migrations
 {
     /// <inheritdoc />
-    public partial class AddRowVersionToPost : Migration
+    public partial class AddRowVersionToPostV2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -9,7 +9,7 @@ namespace MainProgram.Auth
 {
     public class PostService : IPostCervice
     {
-        private IPostRepository _postRepository;
+        private readonly IPostRepository _postRepository;
 
         public PostService(IPostRepository postRepository)
         {
@@ -34,9 +34,7 @@ namespace MainProgram.Auth
         public async Task<Post> CreatePost(string authorId, CreatePostRequest postRequest)
         {
             Post newPost = new Post(Guid.NewGuid(), Guid.Parse(authorId), postRequest.IdempotencyKey, postRequest.Title, postRequest.Content, DateTime.UtcNow, DateTime.UtcNow, "Draft");
-
             await _postRepository.AddPost(newPost);
-
             return newPost;
         }
 
@@ -53,14 +51,12 @@ namespace MainProgram.Auth
             post.UpdatedAt = DateTime.UtcNow;
 
             await _postRepository.UpdatePost(post);
-
             return post;
         }
 
         public async Task<bool> DeleteImage(Guid postId, Guid imageId, string authorId)
         {
             var post = await _postRepository.GetPostById(postId);
-
             if (post == null)
                 throw new NotFoundException("Post not found.");
             if (post.AuthorId.ToString() != authorId)
@@ -72,8 +68,7 @@ namespace MainProgram.Auth
 
             post.Images.Remove(image);
 
-            // If you are removing from the storage as well, do that here, e.g., delete the image from storage
-
+            await _postRepository.UpdatePost(post);
             return true;
         }
 
@@ -99,16 +94,14 @@ namespace MainProgram.Auth
             var uploadedImages = new List<Image>();
 
             if (post.Images == null)
-            {
                 post.Images = new List<Image>();
-            }
 
             foreach (var image in images)
             {
                 if (image.Length == 0) continue;
 
                 var id = Guid.NewGuid();
-                var imageUrl = "https://example.com/image.jpg"; // Заглушка, замени на реальный URL
+                var imageUrl = "https://example.com"; 
 
                 var newImage = new Image(id, postId, imageUrl, DateTime.UtcNow);
                 post.Images.Add(newImage);
@@ -127,11 +120,11 @@ namespace MainProgram.Auth
                     await _postRepository.UpdatePost(post);
                     Console.WriteLine("[AddImage] Успешное обновление поста!");
                     saved = true;
-                    break;
+                    break;  
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
-                    Console.WriteLine($"[AddImage] Конфликт обновления! Попытка {i + 1}");
+                    Console.WriteLine($"[AddImage] Конфликт обновления! Попытка {i + 1}. {ex.Message}");
 
                     post = await _postRepository.GetPostById(postId);
                     if (post == null)
@@ -141,12 +134,8 @@ namespace MainProgram.Auth
                     }
 
                     foreach (var img in uploadedImages)
-                    {
                         if (!post.Images.Any(i => i.ImageId == img.ImageId))
-                        {
                             post.Images.Add(img);
-                        }
-                    }
                 }
             }
 
@@ -161,8 +150,6 @@ namespace MainProgram.Auth
         }
 
 
-
-
         public async Task<Post?> PublishPost(Guid postId, string authorId, PublishPostRequest request)
         {
             var post = await _postRepository.GetPostById(postId);
@@ -175,13 +162,12 @@ namespace MainProgram.Auth
             post.UpdatedAt = DateTime.UtcNow;
 
             await _postRepository.UpdatePost(post);
-
             return post;
         }
+
         public async Task<bool> DeletePost(Guid postId, string authorId)
         {
             var post = await _postRepository.GetPostById(postId);
-
             if (post == null)
                 throw new NotFoundException("Post not found.");
             if (post.AuthorId.ToString() != authorId)
@@ -191,5 +177,4 @@ namespace MainProgram.Auth
             return true;
         }
     }
-
 }
