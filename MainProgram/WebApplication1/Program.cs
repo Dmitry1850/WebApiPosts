@@ -1,9 +1,12 @@
 using MainProgram.Data;
 using MainProgram.Extensions;
+using MainProgram.Interfaces;
 using MainProgram.Middlewares;
+using MainProgram.Services;
 using MainProgram.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Minio;
+using MainProgram.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +39,10 @@ builder.Services.AddJwtAuth(builder.Configuration);
 builder.Services.AddSingleton<IMinioRepository, MinioRepository>();
 builder.Services.AddScoped<IUserRepository, UsersRepository>();
 builder.Services.AddScoped<IPostRepository, PostsRepository>();
+
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPostCervice, PostService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 var app = builder.Build();
 
